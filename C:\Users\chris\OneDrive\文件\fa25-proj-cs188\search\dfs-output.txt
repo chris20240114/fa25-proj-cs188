@@ -1,8 +1,7 @@
------BEGIN OPENSSH PRIVATE KEY-----
-b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAstMH8ER
-fjnN6lHbhPKJzCAAAAGAAAAAEAAAAzAAAAC3NzaC1lZDI1NTE5AAAAIOwidWqHrVVkRkQp
-b0N8udeOu5xaYenplPrl3Jse8V2dAAAAoFMGvtDRaJ3pO3ozzVL2X3n+GlHdFjArLYeRHQ
-Ze/ksXqKrs0r5/M9xQxN9qGkkIBgg2wW8k1nOm8kaOBgCK8BgeRgyI3z14aQ/AOC7dOdjG
-V+kpBcTUOJpPTkyKyg8EfAtNLLixQ3HE57WYAoJprRoBswUxzCZifAZ5iu37sUyq2BSL92
-G193zazhJoedQC0EUF0isicxAAxEcpxHKF+xA=
------END OPENSSH PRIVATE KEY-----
+[SearchAgent] using function depthFirstSearch
+[SearchAgent] using problem type PositionSearchProblem
+Start: (5, 5)
+Is the start a goal? False
+Start's successors: [((5, 4), 'South', 1), ((4, 5), 'West', 1)]
+Path found with total cost of 0 in 0.0 seconds
+Search nodes expanded: 1
