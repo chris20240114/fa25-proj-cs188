@@ -185,9 +185,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 bestValue = - 2**63 - 1
                 for action in state.getLegalActions(agentIndex):
                     '''
-                    # Recursively call minimaxhelper for the next agent (agentIndex + 1 or 1 if it's the first ghost)
-                    # The depth remains the same if it's a ghost's turn in the same ply,
-                    # or increments if it's the next Pacman's turn in the next ply.
+                    Here we recursively call the minimaxhelper for the next agent 
+                    (agentIndex + 1 or 1 if it's the first ghost)
+                    The depth remains the same if it's a ghost's turn in the same ply,
+                    or increments if it's the next Pacman's turn in the next ply.
                     '''
                     successor = state.generateSuccessor(agentIndex, action)
                     value = minimaxhelper(1, depth, successor)
@@ -222,12 +223,94 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     Your minimax agent with alpha-beta pruning (question 3)
     """
 
+
+    #Alpha-Beta Pruning pseudocode
+
+    '''
+    a = max's best option on path to root
+    b = min's best option on path to root
+    '''
+    '''
+    def max-value(state, a, b):
+        if state is a terminal node:
+            return utility of state
+        v = neg infinity
+        for each successor of state:
+            v = max(v, value(successor, a, b))
+            if v > b:
+                return v
+            a = max(a, v)
+        return v
+
+    def min-value(state, a, b):
+        if state is a terminal node:
+            return utility of state
+        v = pos infinity
+        for each successor of state:
+            v = min(v, value(successor, a, b))
+            if v < a:
+                return v
+            b = min(b, v)
+        return v
+    '''
+
     def getAction(self, gameState: GameState):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numAgents = gameState.getNumAgents()
+        import math
+        INF = math.inf
+        NEG_INF = -math.inf
+
+        def ab_max(agentIndex, depth, state, a, b):
+            v = NEG_INF
+            for action in state.getLegalActions(agentIndex):
+                successor = state.generateSuccessor(agentIndex, action)
+                v = max(v, ab_val((agentIndex + 1) % numAgents, depth + ((agentIndex + 1) // numAgents), successor, a, b))
+                if v > b:
+                    return v
+                a = max(a, v)
+            return v
+
+        def ab_min(agentIndex, depth, state, a, b):
+            v = INF
+            for action in state.getLegalActions(agentIndex):
+                successor = state.generateSuccessor(agentIndex, action)
+                v = min(v, ab_val((agentIndex + 1) % numAgents, depth + ((agentIndex + 1) // numAgents), successor, a, b))
+                if v < a:
+                    return v
+                b = min(b, v)
+            return v
+
+        def ab_val(agentIndex, depth, state, a, b):
+
+            # checks for win/loss states or if the maximum search depth has been reached, or if agent has no legal actions, returns evalfunc's value in this case
+            # determines if the current agentIndex belongs to the maximizing player or a minimizing player to determine whether to call ab_max or ab_min
+            if state.isWin() or state.isLose() or depth == self.depth:
+                return self.evaluationFunction(state)
+            elif not state.getLegalActions(agentIndex):
+                return self.evaluationFunction(state)
+            elif agentIndex == 0:
+                return ab_max(agentIndex, depth, state, a, b)
+            return ab_min(agentIndex, depth, state, a, b)
+            
+        bestAction = None
+        alpha = NEG_INF
+        beta = INF
+        # choosing the best action for the maximizing player here (pacman)
+        # initial call to ab_val for each legal action of the maximizing player (Pacman) and updates alpha and bestAction accordingly
+        # iterate through all legal actions to find optimal action using ab_pruning and returns best action found
+        for action in gameState.getLegalActions(0):
+            succ = gameState.generateSuccessor(0, action)
+            abval = ab_val(1 % numAgents, 0, succ, alpha, beta)
+            if abval > alpha or bestAction is None:
+                alpha = abval
+                bestAction = action
+
+        return bestAction   
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
