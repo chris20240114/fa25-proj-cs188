@@ -378,10 +378,95 @@ def betterEvaluationFunction(currentGameState: GameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: My function starts with the current game score and then
+    adjusts it based on:
+        1. The distance to the nearest food pellet (closer is better).
+        2. The number of remaining food pellets (fewer is better).
+        3. The distance to the nearest non-scared ghost (further is better). A very close
+      ghost results in a huge penalty.
+        4. The distance to the nearest scared ghost (closer is better, for hunting).
+        5. The number of remaining power capsules (fewer is better).
+        6. Power capsule strategic value
+        7. Win/loss state handling
+        8. Food clustering consideration for efficiency
+    
+    It's sort of similar to the idea we had in the reflex agent, but a lot less arbitrary than that.
+    The function should guide Pacman to eat all the food while avoiding ghosts, and to hunt scared ghosts when the opportunity arises
+    More commentary in the code itself included.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # Useful information you can extract from a GameState (pacman.py)
+    pacman_position = currentGameState.getPacmanPosition()
+    food_list = currentGameState.getFood().asList()
+    ghost_states = currentGameState.getGhostStates()
+    capsules = currentGameState.getCapsules()
+    score = currentGameState.getScore()
+
+    if food_list:
+        food_distances = [util.manhattanDistance(pacman_position, food) for food in food_list]
+        min_food_distance = min(food_distances)
+        # Closer food increases score significantly
+        score += 10.0 / (min_food_distance + 1)
+        closest_foods = sorted(food_distances)[:min(3, len(food_distances))]
+        avg_close_food_dist = sum(closest_foods) / len(closest_foods)
+        score += 5.0 / (avg_close_food_dist + 1)
+
+    score -= 4 * len(food_list)
+
+    # Separate ghosts into scared and active (not scared)
+    scared_ghosts = []
+    active_ghosts = []
+    for ghost in ghost_states:
+        if ghost.scaredTimer > 0:
+            scared_ghosts.append(ghost)
+        else:
+            active_ghosts.append(ghost)
+
+    if active_ghosts:
+        ghost_distances = [util.manhattanDistance(pacman_position, ghost.getPosition()) 
+                          for ghost in active_ghosts]
+        min_ghost_distance = min(ghost_distances)
+        # Heavily penalize being too close to an active ghost
+        if min_ghost_distance <= 1:
+            score -= 5000
+        elif min_ghost_distance == 2:
+            score -= 500
+        elif min_ghost_distance <= 3:
+            score -= 100
+        else:
+            score += 2 * min_ghost_distance
+    
+    # Scared ghost hunting with time awareness
+    if scared_ghosts:
+        for ghost in scared_ghosts:
+            ghost_dist = util.manhattanDistance(pacman_position, ghost.getPosition())
+            scared_time = ghost.scaredTimer
+            
+            # Only hunt if we have enough time to reach the ghost
+            if scared_time > ghost_dist:
+                # Reward for being close to a scared ghost
+                score += 100.0 / (ghost_dist + 1)
+                # Extra reward based on how much time is left
+                score += scared_time * 2
+            else:
+                # Penalize if we can't reach the ghost in time
+                score -= 10
+    if capsules:
+        capsule_distances = [util.manhattanDistance(pacman_position, cap) for cap in capsules]
+        min_capsule_distance = min(capsule_distances)
+        
+        # Capsules are valuable when ghosts are nearby
+        if active_ghosts:
+            closest_ghost_dist = min([util.manhattanDistance(pacman_position, ghost.getPosition()) 
+                                     for ghost in active_ghosts])
+            if closest_ghost_dist < 5:
+                score += 50.0 / (min_capsule_distance + 1)
+        # Otherwise, capsules are less critical
+    score -= 20 * len(capsules)
+
+    return score
+    
 
 # Abbreviation
 better = betterEvaluationFunction
