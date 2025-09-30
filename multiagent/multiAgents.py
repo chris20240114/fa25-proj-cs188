@@ -325,7 +325,53 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numAgents = gameState.getNumAgents()
+        import math
+        INF = math.inf
+        NEG_INF = -math.inf
+
+        def max_value(agentIndex, depth, state):
+            if state.isWin() or state.isLose() or depth == self.depth:
+                return self.evaluationFunction(state)
+            elif not state.getLegalActions(agentIndex):
+                return self.evaluationFunction(state)
+
+            # elif agentIndex != 0:
+            #     raise Exception("max_value called for a minimizing agent")
+
+            next_agent = (agentIndex + 1) % numAgents
+            if next_agent == 0:
+                nextDepth = depth + 1
+            else: 
+                nextDepth = depth
+
+            if agentIndex == 0:
+                v = NEG_INF
+                for action in state.getLegalActions(agentIndex):
+                    succ = state.generateSuccessor(agentIndex, action)
+                    val = max_value(next_agent, nextDepth, succ)
+                    if val > v:
+                        v = val
+                return v
+            else:
+                total = 0
+                for action in state.getLegalActions(agentIndex):
+                    successor = state.generateSuccessor(agentIndex, action)
+                    total += max_value(next_agent, nextDepth, successor)
+                return float(total) / len(state.getLegalActions(agentIndex))
+
+        bestAction = None
+        best_Value = NEG_INF
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            value = max_value(1 % numAgents, 0, successor)
+            if value > best_Value or bestAction is None:
+                best_Value = value
+                bestAction = action
+        return bestAction
+            
+
+
 
 def betterEvaluationFunction(currentGameState: GameState):
     """
