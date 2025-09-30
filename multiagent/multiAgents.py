@@ -264,7 +264,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         INF = math.inf
         NEG_INF = -math.inf
 
-        def ab_max(agentIndex, depth, state, a, b):
+        def max_value(agentIndex, depth, state, a, b):
             v = NEG_INF
             for action in state.getLegalActions(agentIndex):
                 successor = state.generateSuccessor(agentIndex, action)
@@ -274,7 +274,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 a = max(a, v)
             return v
 
-        def ab_min(agentIndex, depth, state, a, b):
+        def min_value(agentIndex, depth, state, a, b):
             v = INF
             for action in state.getLegalActions(agentIndex):
                 successor = state.generateSuccessor(agentIndex, action)
@@ -287,14 +287,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         def ab_val(agentIndex, depth, state, a, b):
 
             # checks for win/loss states or if the maximum search depth has been reached, or if agent has no legal actions, returns evalfunc's value in this case
-            # determines if the current agentIndex belongs to the maximizing player or a minimizing player to determine whether to call ab_max or ab_min
+            # determines if the current agentIndex belongs to the maximizing player or a minimizing player to determine whether to call max_value or min_value
             if state.isWin() or state.isLose() or depth == self.depth:
                 return self.evaluationFunction(state)
             elif not state.getLegalActions(agentIndex):
                 return self.evaluationFunction(state)
             elif agentIndex == 0:
-                return ab_max(agentIndex, depth, state, a, b)
-            return ab_min(agentIndex, depth, state, a, b)
+                return max_value(agentIndex, depth, state, a, b)
+            return min_value(agentIndex, depth, state, a, b)
             
         bestAction = None
         alpha = NEG_INF
