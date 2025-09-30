@@ -75,12 +75,11 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
+        foodList = newFood.asList()
+        score = successorGameState.getScore()
         # we don't want the ghost to stop, so we penalize it
         if action == Directions.STOP:
             score -= 5
-
-        foodList = newFood.asList()
-        score = successorGameState.getScore()
         if len(foodList) == 0:
             return score + 10000000
 
