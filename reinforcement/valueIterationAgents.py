@@ -56,13 +56,33 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.mdp = mdp
         self.discount = discount
         self.iterations = iterations
-        self.values = util.Counter() # A Counter is a dict with default 0
+        self.values = util.Counter()  # A Counter is a dict with default 0
         self.runValueIteration()
 
     def runValueIteration(self):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
+        for i in range(self.iterations):
+            # Make a copy of current values to update - don't want to modify while iterating
+            updated_vals = self.values.copy()
+            for state in self.mdp.getStates():
+                # Terminal states have zero value by definition
+                if self.mdp.isTerminal(state):
+                    updated_vals[state] = 0
+                    continue
+                max_value = -float('inf')
+                available_actions = self.mdp.getPossibleActions(state)
+                for action in available_actions:
+                    q_val = self.computeQValueFromValues(state, action)
+                    # Update our best value if we found something better
+                    if q_val > max_value:
+                        max_value = q_val
+                
+                # Store the best value we found for this state
+                updated_vals[state] = max_value
 
+            # Apply all updates at once (batch update approach)
+            self.values = updated_vals
 
     def getValue(self, state):
         """
@@ -77,7 +97,16 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        transitions = self.mdp.getTransitionStatesAndProbs(state, action)
+        expected_vals = []
+
+        for next_state, prob in transitions:
+            reward = self.mdp.getReward(state, action, next_state)
+            future_value = self.values[next_state]
+            total_value = reward + self.discount * future_value
+            expected_vals.append(prob * total_value)
+
+        return sum(expected_vals)
 
     def computeActionFromValues(self, state):
         """
@@ -89,7 +118,19 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if self.mdp.isTerminal(state):
+            return None
+        
+        actions = self.mdp.getPossibleActions(state)
+        
+        # Compute Q-values for each action and store them as (action, Q-value) pairs
+        q_vals = [(action, self.computeQValueFromValues(state, action)) for action in actions]
+        
+        # Find the action with the highest Q-value
+        # If no actions are available, default to (None, -inf)
+        best_action, foo = max(q_vals, key=lambda item: item[1], default=(None, -float('inf')))
+        
+        return best_action
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
@@ -121,4 +162,5 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
-
+        #left empty for now
+        pass
