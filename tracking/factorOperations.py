@@ -102,7 +102,37 @@ def joinFactors(factors: List[Factor]):
 
 
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    factors_list = list(factors)
+
+    if len(factors_list) == 0:
+        raise ValueError("No factors to join")
+
+    variableDomainsDict = factors_list[0].variableDomainsDict()
+    for f in factors_list[1:]:
+        if f.variableDomainsDict() != variableDomainsDict:
+            raise ValueError("Factors have different variableDomainsDicts")
+
+    unconditioned_vars = set()
+    for factor in factors_list:
+        for v in factor.unconditionedVariables():
+            if v in unconditioned_vars:
+                raise ValueError("Variable {} appears as unconditioned in more than one factor.".format(v))
+            unconditioned_vars.add(v)
+
+    conditioned_vars = set()
+    for factor in factors_list:
+        conditioned_vars.update(factor.conditionedVariables())
+    conditioned_vars -= unconditioned_vars
+
+    result_factor = Factor(unconditioned_vars, conditioned_vars, variableDomainsDict)
+
+    for assignmentDict in result_factor.getAllPossibleAssignmentDicts():
+        prod = 1.0
+        for factor in factors_list:
+            prod *= factor.getProbability(assignmentDict)
+        result_factor.setProbability(assignmentDict, prod)
+
+    return result_factor
     "*** END YOUR CODE HERE ***"
 
 ########### ########### ###########
@@ -153,7 +183,20 @@ def eliminateWithCallTracking(callTrackingList=None):
                     "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        new_unconditioned = set(factor.unconditionedVariables()) - {eliminationVariable}
+        new_conditioned = set(factor.conditionedVariables())
+
+        variableDomainsDict = factor.variableDomainsDict()
+        result = Factor(new_unconditioned, new_conditioned, variableDomainsDict)
+
+        for assignment in result.getAllPossibleAssignmentDicts():
+            total = sum(
+                factor.getProbability({**assignment, eliminationVariable: val})
+                for val in variableDomainsDict[eliminationVariable]
+            )
+            result.setProbability(assignment, total)
+
+        return result
         "*** END YOUR CODE HERE ***"
 
     return eliminate
