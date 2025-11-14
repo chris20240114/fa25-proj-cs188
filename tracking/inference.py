@@ -601,7 +601,6 @@ class ExactInference(InferenceModule):
         pacmanPosition = gameState.getPacmanPosition()
         jailPosition = self.getJailPosition()
 
-        # Update each position: posterior ∝ likelihood * prior
         for position in self.allPositions:
             likelihood = self.getObservationProb(observation, pacmanPosition, position, jailPosition)
             self.beliefs[position] = self.beliefs[position] * likelihood
@@ -704,7 +703,26 @@ class ParticleFilter(InferenceModule):
         the DiscreteDistribution may be useful.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        pacmanPosition = gameState.getPacmanPosition()
+        jailPosition = self.getJailPosition()
+        weights = DiscreteDistribution()
+        
+        for p in self.particles:
+            weight = self.getObservationProb(observation, pacmanPosition, p, jailPosition)
+            weights[p] += weight
+        
+        if weights.total() == 0:
+            self.initializeUniformly(gameState)
+            return
+        
+        weights.normalize()
+        new_particles = []
+        
+        for _ in range(self.numParticles):
+            sampled_particle = weights.sample()
+            new_particles.append(sampled_particle)
+            
+        self.particles = new_particles
         "*** END YOUR CODE HERE ***"
     
     ########### ########### ###########
@@ -717,5 +735,5 @@ class ParticleFilter(InferenceModule):
         gameState.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        self.particles = [self.getPositionDistribution(gameState, oldPos).sample() for oldPos in self.particles]
         "*** END YOUR CODE HERE ***"
