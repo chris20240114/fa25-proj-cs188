@@ -1,0 +1,12 @@
+---
+:id: 373990616
+:submitters:
+- :name: Chris Shen
+  :email: cs.mizuwari@berkeley.edu
+:created_at: !ruby/object:ActiveSupport::TimeWithZone
+  utc: 2025-12-01 08:21:40.132204000 Z
+  zone: !ruby/object:ActiveSupport::TimeZone
+    name: America/Los_Angeles
+  time: 2025-12-01 00:21:40.132204000 Z
+:status: processed
+:score: 25.0
